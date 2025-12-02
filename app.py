@@ -48,14 +48,12 @@ if uploaded_file is not None:
     
     # Validasi kolom yang diperlukan
     if "FOB_USD" in df.columns and "Qty" in df.columns:
+        # Convert data to numeric, errors='coerce' will convert invalid data to NaN
+        df["FOB_USD"] = pd.to_numeric(df["FOB_USD"], errors='coerce')
+        df["Qty"] = pd.to_numeric(df["Qty"], errors='coerce')
+
+        # Remove rows with NaN values
         df_clean = df[["FOB_USD", "Qty"]].dropna()  # Remove rows with missing values
-
-        # Mengkonversi kolom FOB_USD dan Qty ke format numerik jika ada data yang berupa string
-        df_clean["FOB_USD"] = pd.to_numeric(df_clean["FOB_USD"], errors='coerce')
-        df_clean["Qty"] = pd.to_numeric(df_clean["Qty"], errors='coerce')
-
-        # Menghapus baris dengan nilai NaN setelah konversi
-        df_clean = df_clean.dropna()
 
         # Normalisasi data (standarisasi)
         scaler = StandardScaler()
