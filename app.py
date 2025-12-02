@@ -31,9 +31,6 @@ else:
 st.subheader("Preview Data")
 st.dataframe(df.head())
 
-st.write("Nama kolom di data:")
-st.write(list(df.columns))
-
 # pastikan kolom wajib ada
 required_cols = ["Nama_Perusahaan", "FOB_USD", "Qty"]
 missing = [c for c in required_cols if c not in df.columns]
