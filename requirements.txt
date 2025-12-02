@@ -1,7 +1,7 @@
-streamlit==1.5.0         # Versi Streamlit yang digunakan (sesuaikan jika ada versi terbaru)
-pandas==1.4.0           # Untuk manipulasi data
-matplotlib==3.4.3       # Untuk visualisasi grafik dan plotting
-seaborn==0.11.2         # Untuk visualisasi statistik
-scikit-learn==1.0.2     # Untuk algoritma K-Means Clustering
-openpyxl==3.0.9         # Untuk membaca file Excel (.xlsx)
-pyngrok==5.1.0          # Untuk membuat aplikasi Streamlit dapat diakses secara publik melalui ngrok
+streamlit
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+openpyxl
