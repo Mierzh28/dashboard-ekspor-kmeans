@@ -22,14 +22,7 @@ if uploaded_file is None:
     st.info("Silakan unggah file CSV / Excel dulu.")
     st.stop()
 
-# pastikan kolom wajib ada
-required_cols = ["Nama_Perusahaan", "FOB_USD", "Qty"]
-missing = [c for c in required_cols if c not in df.columns]
-if missing:
-    st.error(f"Kolom berikut tidak ditemukan di dataset: {missing}")
-    st.stop()
-
- === BACA DATA ===
+# === BACA DATA ===
 if uploaded_file.name.endswith(".csv"):
     df = pd.read_csv(uploaded_file)
 else:
@@ -107,7 +100,7 @@ for k in K_range:
     km.fit(X_scaled)
     inertia.append(km.inertia_)
 
-fig, ax = plt.subplots(figsize=(5, 4))
+fig, ax = plt.subplots()
 ax.plot(K_range, inertia, marker="o")
 ax.set_xlabel("Jumlah Cluster (k)")
 ax.set_ylabel("Inertia")
@@ -131,7 +124,7 @@ if k_optimal > 1:
     st.write(f"Silhouette Score (k={k_optimal}): **{sil:.3f}**")
 
 # Scatter plot cluster
-fig, ax = plt.subplots(figsize=(5, 4))
+fig, ax = plt.subplots(figsize=(8, 6))
 sns.scatterplot(
     data=df_cluster,
     x="FOB_USD",
