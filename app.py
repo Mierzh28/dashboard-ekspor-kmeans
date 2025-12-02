@@ -72,7 +72,7 @@ if uploaded_file is not None:
 
         # Tampilkan data pertama untuk melihat preview
         st.subheader("Data Mentah")
-        st.write(df.head())  # Menampilkan 5 baris pertama dari dataset
+        st.write(df.head(11))  # Menampilkan 5 baris pertama dari dataset
 
         # Preprocessing data: Hapus nilai yang kosong dan lakukan standarasi
         df_clean = df.copy()
