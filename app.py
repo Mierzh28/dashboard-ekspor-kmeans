@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
 # Set page layout to wide
 st.set_page_config(layout="wide")
@@ -35,11 +36,15 @@ if uploaded_file is not None:
     # Membersihkan data untuk analisis
     df['FOB_USD'] = pd.to_numeric(df['FOB_USD'], errors='coerce')
     df['Qty'] = pd.to_numeric(df['Qty'], errors='coerce')
+    
+    # Menangani nilai 0 atau NaN pada kolom yang digunakan untuk clustering
+    df['FOB_USD'] = df['FOB_USD'].replace(0, np.nan)
+    df['Qty'] = df['Qty'].replace(0, np.nan)
     df = df.dropna(subset=['FOB_USD', 'Qty'])  # Menghapus NaN jika ada
 
     # Menampilkan perusahaan dengan transaksi terbanyak
     st.markdown("### Perusahaan yang Sering Melakukan Transaksi")
-    transaksi_perusahaan = df.groupby('Nama Perusahaan').size().reset_index(name='Jumlah Transaksi')
+    transaksi_perusahaan = df.groupby('Nama_Perusahaan').size().reset_index(name='Jumlah Transaksi')
     transaksi_perusahaan_sorted = transaksi_perusahaan.sort_values(by='Jumlah Transaksi', ascending=False)
     
     st.write("Berikut adalah perusahaan yang sering melakukan transaksi, diurutkan berdasarkan jumlah transaksi terbanyak:")
@@ -88,18 +93,17 @@ if uploaded_file is not None:
     st.pyplot(fig)
 
     # Evaluasi Hasil Clustering menggunakan Silhouette Score
-    from sklearn.metrics import silhouette_score
     sil_score = silhouette_score(scaled_features, df_clean['Cluster'])
     st.write(f'Silhouette Score: {sil_score:.3f}')
 
     # Visualisasi Perusahaan dengan Transaksi Terbanyak
     st.markdown("### Top 10 Perusahaan dengan Transaksi Terbanyak")
-    company_transactions = df_clean['Nama Perusahaan'].value_counts().reset_index()
-    company_transactions.columns = ['Nama Perusahaan', 'Jumlah Transaksi']
+    company_transactions = df_clean['Nama_Perusahaan'].value_counts().reset_index()
+    company_transactions.columns = ['Nama_Perusahaan', 'Jumlah_Transaksi']
     top_companies = company_transactions.head(10)
 
     fig, ax = plt.subplots(figsize=(12, 7))
-    sns.barplot(x='Jumlah Transaksi', y='Nama Perusahaan', data=top_companies, palette='viridis')
+    sns.barplot(x='Jumlah_Transaksi', y='Nama_Perusahaan', data=top_companies, palette='viridis')
     ax.set_title("Top 10 Perusahaan dengan Transaksi Terbanyak")
     ax.set_xlabel('Jumlah Transaksi')
     ax.set_ylabel('Nama Perusahaan')
