@@ -7,6 +7,28 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
+# ============================================
+#  F U N G S I   P R E P R O C E S S   &   C L U S T E R
+# ============================================
+def preprocess_and_cluster(df, k=3):
+    df = df.copy()
+    df["FOB_USD"] = (
+        df["FOB_USD"].astype(str).str.replace(",", "", regex=False)
+    )
+    df["FOB_USD"] = pd.to_numeric(df["FOB_USD"], errors="coerce")
+    df["Qty"] = pd.to_numeric(df["Qty"], errors="coerce")
+    df["FOB_USD"] = df["FOB_USD"].fillna(df["FOB_USD"].median())
+    df["Qty"] = df["Qty"].fillna(df["Qty"].median())
+
+    X = df[["FOB_USD", "Qty"]].copy()
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    df["Cluster"] = kmeans.fit_predict(X_scaled)
+
+    return df, kmeans
+
 # Layout lebar
 st.set_page_config(page_title="Dashboard Ekspor K-Means", layout="wide")
 
