@@ -203,3 +203,9 @@ for _, row in cluster_stats_flat.iterrows():
     )
 
     st.markdown(text)
+
+st.markdown("""
+<div style="text-align:center; font-size:12px; color:gray;">
+    © 2025 – Dashboard Ekspor K-Means by <b>MIRZA CAHYA NINGRUM</b>
+</div>
+""", unsafe_allow_html=True)
