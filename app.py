@@ -9,8 +9,19 @@ from sklearn.cluster import KMeans
 # Set page layout to wide
 st.set_page_config(layout="wide")
 
-# Menampilkan Judul Aplikasi
-st.title("Penerapan Algoritma K-Means Clustering untuk Segmentasi Perusahaan Berdasarkan Transaksi Ekspor")
+# Fungsi untuk membersihkan kolom
+def clean_data(df, column_name):
+    # Menghapus karakter selain angka dan titik (misalnya simbol mata uang atau koma)
+    df[column_name] = df[column_name].replace({'\$': '', ',': '', ' ': ''}, regex=True)
+    # Mengonversi kolom menjadi numerik
+    df[column_name] = pd.to_numeric(df[column_name], errors='coerce')
+    return df
+
+# Memastikan data numerik valid
+def check_valid_data(df):
+    if df['FOB_USD'].isnull().sum() > 0 or df['Qty'].isnull().sum() > 0:
+        return False
+    return True
 
 # Sidebar - File Upload
 st.sidebar.title("Unggah Data")
@@ -18,66 +29,93 @@ st.sidebar.info("Unggah file CSV atau Excel untuk analisis clustering")
 uploaded_file = st.sidebar.file_uploader("Pilih file CSV atau Excel", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
-    try:
-        # Load data
-        if uploaded_file.name.endswith("csv"):
-            df = pd.read_csv(uploaded_file)
-        else:
-            df = pd.read_excel(uploaded_file)
+    # Load data
+    if uploaded_file.name.endswith("csv"):
+        df = pd.read_csv(uploaded_file)
+    else:
+        df = pd.read_excel(uploaded_file)
 
-        # Menampilkan data yang diunggah
-        st.write("Berikut adalah data yang diunggah:")
-        st.dataframe(df.head())
+    # Menampilkan data yang diunggah
+    st.title("Data Ekspor")
+    st.write("Berikut adalah data yang diunggah:")
+    st.dataframe(df.head())
 
-        # Menampilkan penjelasan tentang data
+    # Menampilkan penjelasan tentang data
+    st.markdown(""" 
+    Data yang diunggah berisi informasi tentang transaksi ekspor produk. Berikut adalah penjelasan untuk beberapa kolom penting:
+    
+    - **Tanggal Ekspor**: Tanggal ketika transaksi ekspor dilakukan.
+    - **Nomor Aju**: Nomor referensi untuk transaksi.
+    - **Nama Perusahaan**: Nama perusahaan yang melakukan transaksi.
+    - **Uraian Barang**: Deskripsi barang yang diekspor.
+    - **Jumlah (Qty)**: Jumlah barang yang diekspor.
+    - **FOB (USD)**: Nilai ekspor dalam mata uang USD.
+    
+    ***Analisis ini akan mengelompokkan produk berdasarkan nilai FOB dan jumlah transaksi.***
+    """)
+
+    # Membersihkan data pada kolom 'FOB_USD' dan 'Qty'
+    df = clean_data(df, 'FOB_USD')
+    df = clean_data(df, 'Qty')
+
+    # Cek apakah data valid
+    if not check_valid_data(df):
+        st.error("Data yang Anda unggah tidak memiliki data yang valid untuk analisis. Pastikan semua data numerik terisi.")
+    else:
+        st.success("Data siap untuk analisis clustering!")
+
+        # Proses Clustering
+        st.markdown("### Proses Clustering")
+        features = ["FOB_USD", "Qty"]
+        df_clean = df[features].dropna()  # Remove missing values
+
+        # Normalisasi data (standarisasi)
+        scaler = StandardScaler()
+        scaled_features = scaler.fit_transform(df_clean)
+
+        # Melakukan KMeans clustering
+        kmeans = KMeans(n_clusters=3, random_state=42)
+        df_clean['Cluster'] = kmeans.fit_predict(scaled_features)
+
+        # Menampilkan hasil clustering dalam bentuk tabel
+        st.write("Hasil Clustering:")
+        st.dataframe(df_clean.head())
+
+        # Visualisasi Pie Chart
+        st.markdown("### Visualisasi Pie Chart Berdasarkan Cluster")
+        cluster_counts = df_clean['Cluster'].value_counts()
+        fig, ax = plt.subplots()
+        ax.pie(cluster_counts, labels=cluster_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("Set3", len(cluster_counts)))
+        ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        st.pyplot(fig)
+
+        # Visualisasi Bar Chart
+        st.markdown("### Visualisasi Bar Chart Berdasarkan Cluster")
+        cluster_summary = df_clean.groupby('Cluster').agg({'FOB_USD': 'mean', 'Qty': 'mean'}).reset_index()
+        fig, ax = plt.subplots()
+        sns.barplot(data=cluster_summary, x='Cluster', y='FOB_USD', palette='Set2')
+        ax.set_title("Rata-rata Nilai Ekspor (FOB) per Cluster")
+        st.pyplot(fig)
+
+        # Menampilkan statistik
+        st.markdown("### Statistik Cluster")
+        st.write(df_clean.groupby('Cluster').agg({
+            'FOB_USD': ['mean', 'std', 'min', 'max'],
+            'Qty': ['mean', 'std', 'min', 'max']
+        }))
+
+        # Penjelasan untuk user
         st.markdown("""
-        Data yang diunggah berisi informasi tentang transaksi ekspor produk. Berikut adalah penjelasan untuk beberapa kolom penting:
-
-        - **Tanggal Ekspor**: Tanggal ketika transaksi ekspor dilakukan.
-        - **Nomor Aju**: Nomor referensi untuk transaksi.
-        - **Nama Perusahaan**: Nama perusahaan yang melakukan transaksi.
-        - **Uraian Barang**: Deskripsi barang yang diekspor.
-        - **Jumlah (Qty)**: Jumlah barang yang diekspor.
-        - **FOB (USD)**: Nilai ekspor dalam mata uang USD.
-
-        ***Analisis ini akan mengelompokkan produk berdasarkan nilai FOB dan jumlah transaksi.***
+        ### Penjelasan untuk User:
+        
+        **Pie Chart** menunjukkan distribusi persentase jumlah item yang masuk ke dalam masing-masing cluster. Setiap cluster berisi produk dengan karakteristik yang serupa.
+        
+        **Bar Chart** menampilkan rata-rata nilai FOB dari produk dalam setiap cluster. Ini memberi gambaran seberapa besar kontribusi ekspor dari masing-masing cluster.
+        
+        **Statistik Cluster** menunjukkan informasi lebih detail seperti rata-rata, deviasi standar, nilai minimum, dan maksimum dari nilai FOB dan jumlah ekspor untuk masing-masing cluster.
+        
+        Anda dapat menggunakan informasi ini untuk memahami produk mana yang memiliki kontribusi terbesar terhadap nilai ekspor dan produk mana yang membutuhkan perhatian lebih.
         """)
 
-        # Menampilkan tipe data kolom
-        st.markdown("### Tipe Data Setiap Kolom")
-        st.write(df.dtypes)
-
-        # Periksa apakah kolom yang digunakan ada dan bertipe numerik
-        if 'FOB_USD' not in df.columns or 'Qty' not in df.columns:
-            st.error("Kolom 'FOB_USD' atau 'Qty' tidak ditemukan dalam data. Silakan periksa file Anda.")
-        else:
-            # Cek data yang ada pada kolom yang relevan
-            st.markdown("### Memeriksa Nilai Unik pada Kolom 'FOB_USD' dan 'Qty'")
-            st.write(f"Nilai unik di kolom 'FOB_USD': {df['FOB_USD'].unique()}")
-            st.write(f"Nilai unik di kolom 'Qty': {df['Qty'].unique()}")
-
-            # Mengonversi kolom menjadi numerik dan menangani nilai yang tidak valid
-            df['FOB_USD'] = pd.to_numeric(df['FOB_USD'], errors='coerce')
-            df['Qty'] = pd.to_numeric(df['Qty'], errors='coerce')
-
-            # Memeriksa apakah ada nilai NaN setelah konversi
-            st.markdown("### Nilai NaN Setelah Konversi ke Numerik")
-            st.write(f"Jumlah NaN di kolom 'FOB_USD': {df['FOB_USD'].isna().sum()}")
-            st.write(f"Jumlah NaN di kolom 'Qty': {df['Qty'].isna().sum()}")
-
-            # Mengganti NaN dengan rata-rata kolom
-            df['FOB_USD'].fillna(df['FOB_USD'].mean(), inplace=True)
-            df['Qty'].fillna(df['Qty'].mean(), inplace=True)
-
-            # Menghapus baris yang masih kosong setelah pengisian NaN
-            df_clean = df[['FOB_USD', 'Qty']].dropna()
-
-            if df_clean.empty:
-                st.error("Data yang Anda unggah tidak memiliki data yang valid untuk analisis. Pastikan semua data numerik terisi.")
-            else:
-                st.success("Data siap untuk analisis clustering!")
-
-    except Exception as e:
-        st.error(f"Terjadi kesalahan saat memproses data: {e}")
 else:
     st.warning("Silakan unggah file CSV atau Excel terlebih dahulu.")
