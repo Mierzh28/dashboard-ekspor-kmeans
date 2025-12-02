@@ -32,7 +32,7 @@ def preprocess_and_cluster(df, k=3):
 # Layout lebar
 st.set_page_config(page_title="Dashboard Ekspor K-Means", layout="wide")
 
-st.title("Analisis Tren Transaksi Ekspor dan Segmentasi Perusahaan\nMenggunakan K-Means Clustering")
+st.title("Analisis Tren Transaksi Ekspor dan Segmentasi Perusahaan Menggunakan K-Means Clustering")
 
 # === SIDEBAR UPLOAD ===
 st.sidebar.title("Unggah Data")
