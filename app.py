@@ -15,6 +15,28 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
+# Menambahkan background warna dan font custom
+st.markdown(
+    """
+    <style>
+        .reportview-container {
+            background-color: #f0f0f0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        .stButton > button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 15px;
+            padding: 10px 24px;
+            border-radius: 8px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Judul aplikasi
 st.title("Segmentasi Perusahaan Berdasarkan Transaksi Ekspor (K-Means Clustering)")
 
