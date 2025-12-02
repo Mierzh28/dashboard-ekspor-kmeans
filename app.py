@@ -51,59 +51,63 @@ if uploaded_file is not None:
             df['FOB_USD'] = pd.to_numeric(df['FOB_USD'], errors='coerce')
             df['Qty'] = pd.to_numeric(df['Qty'], errors='coerce')
 
-            # Hapus baris dengan nilai NaN setelah konversi
-            df_clean = df[['FOB_USD', 'Qty']].dropna()
-
-            if df_clean.empty:
-                st.error("Data yang Anda unggah tidak memiliki data yang valid untuk analisis. Pastikan semua data numerik terisi.")
+            # Cek apakah ada nilai NaN setelah konversi
+            if df['FOB_USD'].isna().any() or df['Qty'].isna().any():
+                st.error("Terdapat nilai kosong (NaN) pada kolom 'FOB_USD' atau 'Qty'. Pastikan semua nilai valid.")
             else:
-                # Normalisasi data (standarisasi)
-                scaler = StandardScaler()
-                scaled_features = scaler.fit_transform(df_clean)
+                # Menghapus baris dengan nilai NaN
+                df_clean = df[['FOB_USD', 'Qty']].dropna()
 
-                # Melakukan KMeans clustering
-                kmeans = KMeans(n_clusters=3, random_state=42)
-                df_clean['Cluster'] = kmeans.fit_predict(scaled_features)
+                if df_clean.empty:
+                    st.error("Data yang Anda unggah tidak memiliki data yang valid untuk analisis. Pastikan semua data numerik terisi.")
+                else:
+                    # Normalisasi data (standarisasi)
+                    scaler = StandardScaler()
+                    scaled_features = scaler.fit_transform(df_clean)
 
-                # Menampilkan hasil clustering dalam bentuk tabel
-                st.write("Hasil Clustering:")
-                st.dataframe(df_clean.head())
+                    # Melakukan KMeans clustering
+                    kmeans = KMeans(n_clusters=3, random_state=42)
+                    df_clean['Cluster'] = kmeans.fit_predict(scaled_features)
 
-                # Visualisasi Pie Chart
-                st.markdown("### Visualisasi Pie Chart Berdasarkan Cluster")
-                cluster_counts = df_clean['Cluster'].value_counts()
-                fig, ax = plt.subplots()
-                ax.pie(cluster_counts, labels=cluster_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("Set3", len(cluster_counts)))
-                ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-                st.pyplot(fig)
+                    # Menampilkan hasil clustering dalam bentuk tabel
+                    st.write("Hasil Clustering:")
+                    st.dataframe(df_clean.head())
 
-                # Visualisasi Bar Chart
-                st.markdown("### Visualisasi Bar Chart Berdasarkan Cluster")
-                cluster_summary = df_clean.groupby('Cluster').agg({'FOB_USD': 'mean', 'Qty': 'mean'}).reset_index()
-                fig, ax = plt.subplots()
-                sns.barplot(data=cluster_summary, x='Cluster', y='FOB_USD', palette='Set2')
-                ax.set_title("Rata-rata Nilai Ekspor (FOB) per Cluster")
-                st.pyplot(fig)
+                    # Visualisasi Pie Chart
+                    st.markdown("### Visualisasi Pie Chart Berdasarkan Cluster")
+                    cluster_counts = df_clean['Cluster'].value_counts()
+                    fig, ax = plt.subplots()
+                    ax.pie(cluster_counts, labels=cluster_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("Set3", len(cluster_counts)))
+                    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+                    st.pyplot(fig)
 
-                # Menampilkan statistik
-                st.markdown("### Statistik Cluster")
-                st.write(df_clean.groupby('Cluster').agg({
-                    'FOB_USD': ['mean', 'std', 'min', 'max'],
-                    'Qty': ['mean', 'std', 'min', 'max']
-                }))
+                    # Visualisasi Bar Chart
+                    st.markdown("### Visualisasi Bar Chart Berdasarkan Cluster")
+                    cluster_summary = df_clean.groupby('Cluster').agg({'FOB_USD': 'mean', 'Qty': 'mean'}).reset_index()
+                    fig, ax = plt.subplots()
+                    sns.barplot(data=cluster_summary, x='Cluster', y='FOB_USD', palette='Set2')
+                    ax.set_title("Rata-rata Nilai Ekspor (FOB) per Cluster")
+                    st.pyplot(fig)
 
-                # Penjelasan untuk user
-                st.markdown("""
-                ### Penjelasan untuk User:
+                    # Menampilkan statistik
+                    st.markdown("### Statistik Cluster")
+                    st.write(df_clean.groupby('Cluster').agg({
+                        'FOB_USD': ['mean', 'std', 'min', 'max'],
+                        'Qty': ['mean', 'std', 'min', 'max']
+                    }))
 
-                **Pie Chart** menunjukkan distribusi persentase jumlah item yang masuk ke dalam masing-masing cluster. Setiap cluster berisi produk dengan karakteristik yang serupa.
+                    # Penjelasan untuk user
+                    st.markdown("""
+                    ### Penjelasan untuk User:
 
-                **Bar Chart** menampilkan rata-rata nilai FOB dari produk dalam setiap cluster. Ini memberi gambaran seberapa besar kontribusi ekspor dari masing-masing cluster.
+                    **Pie Chart** menunjukkan distribusi persentase jumlah item yang masuk ke dalam masing-masing cluster. Setiap cluster berisi produk dengan karakteristik yang serupa.
 
-                **Statistik Cluster** menunjukkan informasi lebih detail seperti rata-rata, deviasi standar, nilai minimum, dan maksimum dari nilai FOB dan jumlah ekspor untuk masing-masing cluster.
+                    **Bar Chart** menampilkan rata-rata nilai FOB dari produk dalam setiap cluster. Ini memberi gambaran seberapa besar kontribusi ekspor dari masing-masing cluster.
 
-                Anda dapat menggunakan informasi ini untuk memahami produk mana yang memiliki kontribusi terbesar terhadap nilai ekspor dan produk mana yang membutuhkan perhatian lebih.
-                """)
+                    **Statistik Cluster** menunjukkan informasi lebih detail seperti rata-rata, deviasi standar, nilai minimum, dan maksimum dari nilai FOB dan jumlah ekspor untuk masing-masing cluster.
+
+                    Anda dapat menggunakan informasi ini untuk memahami produk mana yang memiliki kontribusi terbesar terhadap nilai ekspor dan produk mana yang membutuhkan perhatian lebih.
+                    """)
 
     except Exception as e:
         st.error(f"Terjadi kesalahan saat memproses data: {e}")
