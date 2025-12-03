@@ -182,21 +182,11 @@ st.markdown(
     """
 ### Dasar Teoretis Pembagian Range Cluster
 
-Menurut **Hair et al. (2014)**, analisis klaster bertujuan mengelompokkan objek
-ke dalam beberapa cluster sehingga objek di dalam satu cluster bersifat relatif homogen,
-sedangkan antar-cluster heterogen. Profil setiap cluster dapat dijelaskan dengan
-melihat nilai pusat (centroid), rata-rata, serta rentang (minimum–maksimum) dari
-variabel yang digunakan.
-
-**Jain (2010)** menjelaskan bahwa pada algoritma **K-Means**, setiap cluster
-direpresentasikan oleh centroid yang menggambarkan nilai rata-rata variabel pada
-cluster tersebut. Oleh karena itu, interpretasi segmentasi dilakukan dengan
-meninjau distribusi nilai di sekitar centroid, misalnya melalui nilai
-minimum, maksimum, dan rata-rata tiap variabel pada masing-masing cluster.
-
-Mengacu pada kedua rujukan tersebut, pembagian range dan penjelasan cluster
-pada dashboard ini didasarkan pada ringkasan statistik **FOB_USD** dan **Qty**
-(min–max dan mean) untuk setiap label cluster (0, 1, dan 2).
+Cluster **0, 1, dan 2** pada dashboard ini adalah 
+hasil segmentasi **statistik berbasis algoritma K-Means**, bukan pengelompokan 
+resmi dari Direktorat Jenderal Bea dan Cukai. Cluster digunakan untuk 
+menganalisis pola ekspor berdasarkan dua variabel utama, yaitu **FOB_USD** dan **Qty**, 
+sehingga dapat memetakan kelompok perusahaan dengan karakteristik ekspor serupa.
 """
 )
 
